@@ -292,6 +292,64 @@ pub trait MontConfig<const N: usize>: 'static + Sync + Send + Sized {
         }
     }
 
+    #[cfg(not(target_family = "wasm"))] // impl not optimized for wasm, because of some 128 bits products
+    #[inline]
+    fn inverse(this: &Fp<MontBackend<Self, N>, N>) -> Option<Fp<MontBackend<Self, N>, N>> {
+        if this.is_zero() {
+            None
+        } else {
+            // Check `Self::INV` to know which of `Fp` or `Fq` we are
+            let inverter = if Self::INV == 11037532056220336127 {
+                // Fp
+                super::inverse::BYInverter {
+                    modulus: super::inverse::Integer([
+                        1814160019365560321,
+                        655946578803287150,
+                        2,
+                        0,
+                        64,
+                        0,
+                    ]),
+                    adjuster: super::inverse::Integer([
+                        898728379203715087,
+                        2255237944337466270,
+                        4141791841069945229,
+                        1968191642266354973,
+                        9,
+                        0,
+                    ]),
+                    inverse: 2797525999061827585,
+                }
+            } else if Self::INV == 10108024940646105087 {
+                // Fq
+                super::inverse::BYInverter {
+                    modulus: super::inverse::Integer([
+                        884652903791329281,
+                        655946578822079350,
+                        2,
+                        0,
+                        64,
+                        0,
+                    ]),
+                    adjuster: super::inverse::Integer([
+                        4365809925394268175,
+                        2228451641930570639,
+                        4243007676294846726,
+                        1968191643554589279,
+                        9,
+                        0,
+                    ]),
+                    inverse: 3727033114636058625,
+                }
+            } else {
+                unimplemented!();
+            };
+            let inverted = inverter.invert(&this.0 .0)?;
+            Some(Fp::new_unchecked(BigInt(inverted)))
+        }
+    }
+
+    #[cfg(target_family = "wasm")]
     fn inverse(a: &Fp<MontBackend<Self, N>, N>) -> Option<Fp<MontBackend<Self, N>, N>> {
         if a.is_zero() {
             None
