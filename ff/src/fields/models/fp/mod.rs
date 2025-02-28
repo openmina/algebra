@@ -14,6 +14,7 @@ use ark_std::{
     One, Zero,
 };
 
+mod inverse;
 #[macro_use]
 mod montgomery_backend;
 pub use montgomery_backend::*;
