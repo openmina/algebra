@@ -140,6 +140,10 @@ impl<P: CubicExtParameters> One for CubicExtField<P> {
 impl<P: CubicExtParameters> Field for CubicExtField<P> {
     type BasePrimeField = P::BasePrimeField;
 
+    fn montgomery_form_ref(&self) -> [u64; 4] {
+        unimplemented!()
+    }
+
     fn extension_degree() -> u64 {
         3 * P::BaseField::extension_degree()
     }

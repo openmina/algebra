@@ -54,7 +54,7 @@ impl VariableBaseMSM {
                         scalar.divn(w_start as u32);
 
                         // We mod the remaining bits by 2^{window size}, thus taking `c` bits.
-                        let scalar = scalar.as_ref()[0] % (1 << c);
+                        let scalar = scalar.to_64x4()[0] % (1 << c);
 
                         // If the scalar is non-zero, we update the corresponding
                         // bucket.

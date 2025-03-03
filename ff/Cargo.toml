@@ -33,3 +33,7 @@ default = []
 std = [ "ark-std/std", "ark-serialize/std" ]
 parallel = [ "std", "rayon", "ark-std/parallel" ]
 asm = []
+32x9 = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(use_asm)'] }

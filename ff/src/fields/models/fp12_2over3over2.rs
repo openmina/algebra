@@ -3,7 +3,7 @@ use crate::{
     fields::{fp6_3over2::*, Field, Fp2, Fp2Parameters},
     One,
 };
-use core::marker::PhantomData;
+use core::{convert::TryInto, marker::PhantomData};
 use core::ops::{AddAssign, SubAssign};
 
 type Fp2Params<P> = <<P as Fp12Parameters>::Fp6Params as Fp6Parameters>::Fp2Params;
@@ -135,7 +135,7 @@ impl<P: Fp12Parameters> Fp12<P> {
         // Faster Squaring in the Cyclotomic Subgroup of Sixth Degree Extensions
         // - Robert Granger and Michael Scott
         //
-        if characteristic_square_mod_6_is_one(Self::characteristic()) {
+        if characteristic_square_mod_6_is_one(&Self::characteristic()) {
             let fp2_nr = <P::Fp6Params as Fp6Parameters>::mul_fp2_by_nonresidue;
 
             let r0 = &self.c0.c0;

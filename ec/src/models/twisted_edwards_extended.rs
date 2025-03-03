@@ -21,9 +21,7 @@ use num_traits::{One, Zero};
 use zeroize::Zeroize;
 
 use ark_ff::{
-    bytes::{FromBytes, ToBytes},
-    fields::{BitIteratorBE, Field, PrimeField, SquareRootField},
-    ToConstraintField, UniformRand,
+    bytes::{FromBytes, ToBytes}, fields::{BitIteratorBE, Field, PrimeField, SquareRootField}, BigInteger, ToConstraintField, UniformRand
 };
 
 #[cfg(feature = "parallel")]
@@ -138,7 +136,8 @@ impl<P: Parameters> AffineCurve for GroupAffine<P> {
     }
 
     fn mul<S: Into<<Self::ScalarField as PrimeField>::BigInt>>(&self, by: S) -> GroupProjective<P> {
-        self.mul_bits(BitIteratorBE::new(by.into()))
+        let inner: <Self::ScalarField as PrimeField>::BigInt = by.into();
+        self.mul_bits(ark_ff::BitIteratorBE::new(inner.to_64x4()))
     }
 
     fn from_random_bytes(bytes: &[u8]) -> Option<Self> {
@@ -610,7 +609,7 @@ impl<'a, P: Parameters> SubAssign<&'a Self> for GroupProjective<P> {
 
 impl<P: Parameters> MulAssign<P::ScalarField> for GroupProjective<P> {
     fn mul_assign(&mut self, other: P::ScalarField) {
-        *self = self.mul(other.into_repr())
+        *self = self.mul(other.into_repr().to_64x4())
     }
 }
 

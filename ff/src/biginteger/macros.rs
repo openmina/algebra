@@ -1,16 +1,42 @@
 macro_rules! bigint_impl {
     ($name:ident, $num_limbs:expr) => {
         #[derive(Copy, Clone, PartialEq, Eq, Debug, Default, Hash, Zeroize)]
-        pub struct $name(pub [u64; $num_limbs]);
+        pub struct $name(pub(crate) [u64; $num_limbs]);
 
         impl $name {
             pub const fn new(value: [u64; $num_limbs]) -> Self {
                 $name(value)
             }
+
+            pub const fn to_64x4(&self) -> [u64; $num_limbs] {
+                self.0
+            }
+
+            pub const fn from_64x4(value: [u64; $num_limbs]) -> Self {
+                $name(value)
+            }
+
+            #[ark_ff_asm::unroll_for_loops]
+            pub fn assign_bits_and(&mut self, other: &Self) {
+                for i in 0..$num_limbs {
+                    self.0[i] |= other.0[i]
+                }
+            }
+
+            pub fn to_native(&self) -> [u64; $num_limbs] {
+                self.0
+            }
         }
 
         impl BigInteger for $name {
             const NUM_LIMBS: usize = $num_limbs;
+
+            fn to_64x4(&self) -> [u64; 4] {
+                self.0
+            }
+            fn from_64x4(value: [u64; 4]) -> Self {
+                $name(value)
+            }
 
             #[inline]
             #[ark_ff_asm::unroll_for_loops]

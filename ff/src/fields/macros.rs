@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 macro_rules! impl_prime_field_serializer {
     ($field: ident, $params: ident, $byte_size: expr) => {
         impl<P: $params> CanonicalSerializeWithFlags for $field<P> {
@@ -296,6 +298,10 @@ macro_rules! impl_Fp {
         impl<P: $FpParameters> Field for $Fp<P> {
             type BasePrimeField = Self;
 
+            fn montgomery_form_ref(&self) -> [u64; 4] {
+                self.0.0
+            }
+
             fn extension_degree() -> u64 {
                 1
             }
@@ -324,8 +330,8 @@ macro_rules! impl_Fp {
             }
 
             #[inline]
-            fn characteristic() -> &'static [u64] {
-                P::MODULUS.as_ref()
+            fn characteristic() -> [u64; 4] {
+                P::MODULUS.0
             }
 
             #[inline]
@@ -384,6 +390,63 @@ macro_rules! impl_Fp {
 
             impl_field_square_in_place!($limbs);
 
+            #[cfg(not(target_family = "wasm"))] // impl not optimized for wasm
+            #[inline]
+            fn inverse(&self) -> Option<Self> {
+                if self.is_zero() {
+                    None
+                } else {
+                    let inverter = if P::INV == 11037532056220336127 {
+                        // fp
+                        crate::inverse::BYInverter {
+                            modulus: crate::inverse::Integer([
+                                1814160019365560321,
+                                655946578803287150,
+                                2,
+                                0,
+                                64,
+                                0,
+                            ]),
+                            adjuster: crate::inverse::Integer([
+                                898728379203715087,
+                                2255237944337466270,
+                                4141791841069945229,
+                                1968191642266354973,
+                                9,
+                                0,
+                            ]),
+                            inverse: 2797525999061827585,
+                        }
+                    } else if P::INV == 10108024940646105087 {
+                        // fq
+                        crate::inverse::BYInverter {
+                            modulus: crate::inverse::Integer([
+                                884652903791329281,
+                                655946578822079350,
+                                2,
+                                0,
+                                64,
+                                0,
+                            ]),
+                            adjuster: crate::inverse::Integer([
+                                4365809925394268175,
+                                2228451641930570639,
+                                4243007676294846726,
+                                1968191643554589279,
+                                9,
+                                0,
+                            ]),
+                            inverse: 3727033114636058625,
+                        }
+                    } else {
+                        unimplemented!();
+                    };
+                    let inverted = inverter.invert(&self.0 .0)?;
+                    Some(Self($BigInteger(inverted), PhantomData))
+                }
+            }
+
+            #[cfg(target_family = "wasm")]
             #[inline]
             fn inverse(&self) -> Option<Self> {
                 if self.is_zero() {

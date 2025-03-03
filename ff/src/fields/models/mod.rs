@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use ark_std::{
     cmp::{Ord, Ordering, PartialOrd},
     fmt::{Display, Formatter, Result as FmtResult},
@@ -10,63 +12,73 @@ use num_traits::{One, Zero};
 
 use crate::{
     biginteger::{
-        arithmetic as fa, BigInteger as _BigInteger, BigInteger256, BigInteger320, BigInteger384,
-        BigInteger448, BigInteger64, BigInteger768, BigInteger832,
+        arithmetic as fa, BigInteger as _BigInteger, native_bigint::BigInteger256,
     },
     bytes::{FromBytes, ToBytes},
     fields::{FftField, Field, FpParameters, LegendreSymbol, PrimeField, SquareRootField},
 };
 use ark_serialize::*;
 
-impl_Fp!(Fp64, Fp64Parameters, BigInteger64, BigInteger64, 1, "64");
-impl_Fp!(
-    Fp256,
-    Fp256Parameters,
-    BigInteger256,
-    BigInteger256,
-    4,
-    "256"
-);
-impl_Fp!(
-    Fp320,
-    Fp320Parameters,
-    BigInteger320,
-    BigInteger320,
-    5,
-    "320"
-);
-impl_Fp!(
-    Fp384,
-    Fp384Parameters,
-    BigInteger384,
-    BigInteger384,
-    6,
-    "384"
-);
-impl_Fp!(
-    Fp448,
-    Fp448Parameters,
-    BigInteger448,
-    BigInteger448,
-    7,
-    "448"
-);
-impl_Fp!(
-    Fp768,
-    Fp768Parameters,
-    BigInteger768,
-    BigInteger768,
-    12,
-    "768"
-);
-impl_Fp!(
-    Fp832,
-    Fp832Parameters,
-    BigInteger832,
-    BigInteger832,
-    13,
-    "832"
-);
+pub mod native_fp256 {
+    use super::*;
+    impl_Fp!(
+        Fp256,
+        Fp256Parameters,
+        BigInteger256,
+        BigInteger256,
+        4,
+        "256"
+    );
+}
+pub mod webnode;
+
+#[cfg(not(any(target_family = "wasm", feature = "32x9")))]
+pub use native_fp256::*;
+
+#[cfg(any(target_family = "wasm", feature = "32x9"))]
+pub use webnode::*;
+
+// impl_Fp!(Fp64, Fp64Parameters, BigInteger64, BigInteger64, 1, "64");
+// impl_Fp!(
+//     Fp320,
+//     Fp320Parameters,
+//     BigInteger320,
+//     BigInteger320,
+//     5,
+//     "320"
+// );
+// impl_Fp!(
+//     Fp384,
+//     Fp384Parameters,
+//     BigInteger384,
+//     BigInteger384,
+//     6,
+//     "384"
+// );
+// impl_Fp!(
+//     Fp448,
+//     Fp448Parameters,
+//     BigInteger448,
+//     BigInteger448,
+//     7,
+//     "448"
+// );
+// impl_Fp!(
+//     Fp768,
+//     Fp768Parameters,
+//     BigInteger768,
+//     BigInteger768,
+//     12,
+//     "768"
+// );
+// impl_Fp!(
+//     Fp832,
+//     Fp832Parameters,
+//     BigInteger832,
+//     BigInteger832,
+//     13,
+//     "832"
+// );
 
 pub mod fp2;
 pub use self::fp2::*;

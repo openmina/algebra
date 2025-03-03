@@ -1,7 +1,5 @@
 use crate::{
-    bytes::{FromBytes, ToBytes},
-    fields::{BitIteratorBE, BitIteratorLE},
-    UniformRand,
+    bytes::{FromBytes, ToBytes}, fields::{BitIteratorBE, BitIteratorLE}, UniformRand
 };
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, SerializationError};
 use ark_std::rand::{
@@ -31,14 +29,17 @@ pub fn signed_mod_reduction(n: u64, modulus: u64) -> i64 {
     }
 }
 
-bigint_impl!(BigInteger64, 1);
-bigint_impl!(BigInteger128, 2);
-bigint_impl!(BigInteger256, 4);
-bigint_impl!(BigInteger320, 5);
-bigint_impl!(BigInteger384, 6);
-bigint_impl!(BigInteger448, 7);
-bigint_impl!(BigInteger768, 12);
-bigint_impl!(BigInteger832, 13);
+pub mod native_bigint {
+    use super::*;
+    bigint_impl!(BigInteger256, 4);
+}
+pub mod webnode;
+
+#[cfg(not(any(target_family = "wasm", feature = "32x9")))]
+pub use native_bigint::*;
+
+#[cfg(any(target_family = "wasm", feature = "32x9"))]
+pub use webnode::*;
 
 #[cfg(test)]
 mod tests;
@@ -63,14 +64,15 @@ pub trait BigInteger:
     + 'static
     + UniformRand
     + Zeroize
-    + AsMut<[u64]>
-    + AsRef<[u64]>
     + From<u64>
     + TryFrom<BigUint>
     + Into<BigUint>
 {
     /// Number of limbs.
     const NUM_LIMBS: usize;
+
+    fn to_64x4(&self) -> [u64; 4];
+    fn from_64x4(value: [u64; 4]) -> Self;
 
     /// Add another representation to this one, returning the carry bit.
     fn add_nocarry(&mut self, other: &Self) -> bool;
@@ -119,13 +121,13 @@ pub trait BigInteger:
     /// Returns the bit representation in a big endian boolean array,
     /// with leading zeroes.
     fn to_bits_be(&self) -> Vec<bool> {
-        BitIteratorBE::new(self).collect::<Vec<_>>()
+        BitIteratorBE::new(self.to_64x4()).collect::<Vec<_>>()
     }
 
     /// Returns the bit representation in a little endian boolean array,
     /// with trailing zeroes.
     fn to_bits_le(&self) -> Vec<bool> {
-        BitIteratorLE::new(self).collect::<Vec<_>>()
+        BitIteratorLE::new(self.to_64x4()).collect::<Vec<_>>()
     }
 
     /// Returns the byte representation in a big endian byte array,
@@ -143,11 +145,12 @@ pub trait BigInteger:
         if w >= 2 && w < 64 {
             let mut res = vec![];
             let mut e = *self;
+            let e64 = self.to_64x4();
 
             while !e.is_zero() {
                 let z: i64;
                 if e.is_odd() {
-                    z = signed_mod_reduction(e.as_ref()[0], 1 << w);
+                    z = signed_mod_reduction(e64.as_ref()[0], 1 << w);
                     if z >= 0 {
                         e.sub_noborrow(&Self::from(z as u64));
                     } else {

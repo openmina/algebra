@@ -1,3 +1,5 @@
+use ark_ff::BigInteger;
+
 use {
     crate::{
         models::{ModelParameters, SWModelParameters},
@@ -179,11 +181,11 @@ impl<P: MNT4Parameters> MNT4<P> {
         let mut elt_q = *elt;
         elt_q.frobenius_map(1);
 
-        let w1_part = elt_q.cyclotomic_exp(&P::FINAL_EXPONENT_LAST_CHUNK_1);
+        let w1_part = elt_q.cyclotomic_exp(&P::FINAL_EXPONENT_LAST_CHUNK_1.to_64x4());
         let w0_part = if P::FINAL_EXPONENT_LAST_CHUNK_W0_IS_NEG {
-            elt_inv_clone.cyclotomic_exp(&P::FINAL_EXPONENT_LAST_CHUNK_ABS_OF_W0)
+            elt_inv_clone.cyclotomic_exp(&P::FINAL_EXPONENT_LAST_CHUNK_ABS_OF_W0.to_64x4())
         } else {
-            elt_clone.cyclotomic_exp(&P::FINAL_EXPONENT_LAST_CHUNK_ABS_OF_W0)
+            elt_clone.cyclotomic_exp(&P::FINAL_EXPONENT_LAST_CHUNK_ABS_OF_W0.to_64x4())
         };
 
         w1_part * &w0_part

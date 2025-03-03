@@ -1,3 +1,4 @@
+#![allow(unused)]
 use ark_std::vec::Vec;
 
 /// Make 4 u64 multiplications, instead of 1 u128

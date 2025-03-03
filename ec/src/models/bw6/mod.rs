@@ -2,11 +2,11 @@ use crate::{
     models::{ModelParameters, SWModelParameters},
     PairingEngine,
 };
-use ark_ff::fields::{
+use ark_ff::{fields::{
     fp3::Fp3Parameters,
     fp6_2over3::{Fp6, Fp6Parameters},
     BitIteratorBE, Field, PrimeField, SquareRootField,
-};
+}, BigInteger};
 use num_traits::One;
 
 use core::marker::PhantomData;
@@ -68,7 +68,7 @@ impl<P: BW6Parameters> BW6<P> {
     }
 
     fn exp_by_x(mut f: Fp6<P::Fp6Params>) -> Fp6<P::Fp6Params> {
-        f = f.cyclotomic_exp(&P::X);
+        f = f.cyclotomic_exp(&P::X.to_64x4());
         if P::X_IS_NEGATIVE {
             f.conjugate();
         }

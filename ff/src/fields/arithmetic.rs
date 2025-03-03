@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 /// This modular multiplication algorithm uses Montgomery
 /// reduction for efficient implementation. It also additionally
 /// uses the "no-carry optimization" outlined
