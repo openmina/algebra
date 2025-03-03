@@ -298,6 +298,10 @@ macro_rules! impl_Fp {
         impl<P: $FpParameters> Field for $Fp<P> {
             type BasePrimeField = Self;
 
+            fn montgomery_form_ref(&self) -> [u64; 4] {
+                self.0.0
+            }
+
             fn extension_degree() -> u64 {
                 1
             }

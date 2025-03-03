@@ -760,6 +760,9 @@ impl<C: Fp256Parameters> FromBytes for Fp256<C> {
 
 impl<C: Fp256Parameters> Field for Fp256<C> {
     type BasePrimeField = Self;
+    fn montgomery_form_ref(&self) -> [u64; 4] {
+        self.0.to_64x4()
+    }
     fn extension_degree() -> u64 {
         1
     }

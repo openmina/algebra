@@ -122,6 +122,9 @@ pub trait Field:
 {
     type BasePrimeField: PrimeField;
 
+    /// For debug only
+    fn montgomery_form_ref(&self) -> [u64; 4];
+
     /// Returns the characteristic of the field,
     /// in little-endian representation.
     fn characteristic() -> [u64; 4] {

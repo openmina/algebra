@@ -198,6 +198,10 @@ impl<P: QuadExtParameters> One for QuadExtField<P> {
 impl<P: QuadExtParameters> Field for QuadExtField<P> {
     type BasePrimeField = P::BasePrimeField;
 
+    fn montgomery_form_ref(&self) -> [u64; 4] {
+        unimplemented!()
+    }
+
     fn extension_degree() -> u64 {
         2 * P::BaseField::extension_degree()
     }
