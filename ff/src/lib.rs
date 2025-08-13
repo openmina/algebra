@@ -27,6 +27,10 @@ pub use biginteger::{
 pub mod fields;
 pub use self::fields::*;
 
+#[cfg_attr(test, macro_use)]
+pub mod bytes;
+pub use self::bytes::*;
+
 pub(crate) mod bits;
 pub use bits::*;
 

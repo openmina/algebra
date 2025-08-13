@@ -327,3 +327,20 @@ macro_rules! impl_multiplicative_ops_from_ref {
         }
     };
 }
+
+#[derive(Clone, Debug)]
+pub struct InvalidBigInt;
+
+impl core::fmt::Display for InvalidBigInt {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("InvalidBigInt")
+    }
+}
+
+impl From<InvalidBigInt> for ark_std::string::String {
+    fn from(_: InvalidBigInt) -> Self {
+        format!("InvalidBigInt")
+    }
+}
+
+impl ark_std::error::Error for InvalidBigInt {}
